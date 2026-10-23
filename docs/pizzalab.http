@@ -1,0 +1,17 @@
+### Menú
+GET http://localhost:8080/api/pizzas
+
+### Crear pedido
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{"items":[{"pizzaId":1,"quantity":2},{"pizzaId":2,"quantity":1}]}
+
+### Cambiar estado
+PATCH http://localhost:8080/api/orders/1/status
+Content-Type: application/json
+
+{"status":"EN_PREPARACION"}
+
+### Ejecutar reporte
+POST http://localhost:8080/api/batch/sales-report?date=2026-10-22

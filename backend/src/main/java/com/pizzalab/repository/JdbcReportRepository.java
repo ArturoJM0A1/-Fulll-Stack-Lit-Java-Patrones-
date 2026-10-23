@@ -1,0 +1,8 @@
+package com.pizzalab.repository;
+import com.fasterxml.jackson.core.type.TypeReference; import com.fasterxml.jackson.databind.ObjectMapper; import com.pizzalab.dto.SalesReportResponse; import org.springframework.jdbc.core.JdbcTemplate; import org.springframework.stereotype.Repository; import java.time.LocalDate; import java.util.*;
+/** DAO de reportes; convierte el mapa a JSON para conservarlo en la única base SQLite. */
+@Repository public class JdbcReportRepository implements ReportRepository {
+ private final JdbcTemplate jdbc; private final ObjectMapper json; public JdbcReportRepository(JdbcTemplate j,ObjectMapper o){jdbc=j;json=o;}
+ public void upsert(SalesReportResponse r){try{jdbc.update("INSERT INTO sales_reports(report_date,order_count,total_cents,by_status,generated_at) VALUES(?,?,?,?,?) ON CONFLICT(report_date) DO UPDATE SET order_count=excluded.order_count,total_cents=excluded.total_cents,by_status=excluded.by_status,generated_at=excluded.generated_at",r.date().toString(),r.orderCount(),r.totalCents(),json.writeValueAsString(r.byStatus()),r.generatedAt());}catch(Exception e){throw new IllegalStateException("No se pudo guardar el reporte",e);}}
+ public Optional<SalesReportResponse> find(LocalDate date){return jdbc.query("SELECT * FROM sales_reports WHERE report_date=?",(rs,n)->{try{return new SalesReportResponse(date,rs.getInt("order_count"),rs.getInt("total_cents"),json.readValue(rs.getString("by_status"),new TypeReference<Map<String,Integer>>(){}),rs.getString("generated_at"));}catch(Exception e){throw new IllegalStateException(e);}},date.toString()).stream().findFirst();}
+}

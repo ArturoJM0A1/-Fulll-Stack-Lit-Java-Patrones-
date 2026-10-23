@@ -1,0 +1,9 @@
+{
+  "name": "pizzalab-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite --host 127.0.0.1", "build": "vite build", "test": "vitest run" },
+  "dependencies": { "lit": "^3.3.3", "rxjs": "^7.8.2" },
+  "devDependencies": { "@vitest/browser": "^3.2.4", "vite": "^6.1.0", "vitest": "^3.2.4" }
+}

@@ -1,0 +1,4 @@
+import { LitElement, html, css } from 'lit';
+/** Página de ventas; slot permite inyectar una nota didáctica sin acoplarla al reporte. */
+export class SalesPage extends LitElement {static properties={report:{type:Object},loading:{type:Boolean},error:{type:String}};static styles=css`:host{display:block}.report{border:1px solid #ddd;padding:1rem;border-radius:.5rem}`;constructor(){super();this.report=null;this.loading=false;this.error='';}render(){return html`<h1>Ventas</h1><slot name="help"></slot>${this.loading?html`<p>Ejecutando proceso batch…</p>`:''}${this.error?html`<p role="alert">${this.error}</p>`:''}${this.report?html`<section class="report"><h2>Reporte ${this.report.date}</h2><p>${this.report.orderCount} pedidos; $${(this.report.totalCents/100).toFixed(2)}</p><p>${Object.entries(this.report.byStatus).map(([s,n])=>html`${s}: ${n} `)}</p></section>`:html`<p>Selecciona una fecha y ejecuta el batch.</p>`}`;}}
+customElements.define('sales-page',SalesPage);

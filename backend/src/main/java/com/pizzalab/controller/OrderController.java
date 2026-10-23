@@ -1,0 +1,4 @@
+package com.pizzalab.controller;
+import com.pizzalab.dto.*; import com.pizzalab.service.OrderService; import jakarta.validation.Valid; import org.springframework.http.*; import org.springframework.web.bind.annotation.*; import java.util.List;
+/** Endpoints REST de pedidos sin SQL ni reglas de cálculo acopladas. */
+@RestController @RequestMapping("/api/orders") public class OrderController {private final OrderService service; public OrderController(OrderService s){service=s;} @GetMapping public List<OrderResponse> all(){return service.list();} @GetMapping("/{id}") public OrderResponse one(@PathVariable long id){return service.get(id);} @PostMapping public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest r){return ResponseEntity.status(HttpStatus.CREATED).body(service.create(r));} @PatchMapping("/{id}/status") public OrderResponse status(@PathVariable long id,@Valid @RequestBody StatusRequest r){return service.changeStatus(id,r.status());}}

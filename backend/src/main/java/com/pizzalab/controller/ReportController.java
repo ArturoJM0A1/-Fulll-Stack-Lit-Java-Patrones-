@@ -1,0 +1,4 @@
+package com.pizzalab.controller;
+import com.pizzalab.dto.SalesReportResponse; import com.pizzalab.service.SalesReportService; import org.springframework.web.bind.annotation.*; import java.time.LocalDate;
+/** API para consultar o iniciar el procesamiento batch de un día concreto. */
+@RestController @RequestMapping("/api") public class ReportController {private final SalesReportService service;public ReportController(SalesReportService s){service=s;}@GetMapping("/reports/sales") public SalesReportResponse get(@RequestParam LocalDate date){return service.get(date);}@PostMapping("/batch/sales-report") public SalesReportResponse run(@RequestParam LocalDate date){return service.run(date);}}
