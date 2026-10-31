@@ -1,0 +1,90 @@
+<header class="page-header">
+  <div>
+    <div class="eyebrow">Procesamiento de informes</div>
+    <h1>Reportes de ventas</h1>
+    <p>Genera reportes persistidos con Spring Batch o consulta el reporte guardado de una fecha.</p>
+  </div>
+</header>
+
+<form class="surface filters" [formGroup]="form" aria-label="Seleccionar intervalo de reportes">
+  <div class="field">
+    <label for="report-from">Desde</label>
+    <input id="report-from" type="date" formControlName="from" />
+  </div>
+  <div class="field">
+    <label for="report-to">Hasta</label>
+    <input id="report-to" type="date" formControlName="to" />
+  </div>
+  <div class="report-actions">
+    <button class="button" type="button" (click)="generate()" [disabled]="state().status === 'loading' || !form.valid">
+      {{ state().status === 'loading' ? 'Procesando…' : 'Generar intervalo con Batch' }}
+    </button>
+    <button class="button secondary" type="button" (click)="readPersisted()" [disabled]="state().status === 'loading' || !form.controls.from.value">
+      Consultar día inicial
+    </button>
+  </div>
+  @if (form.controls.from.value > form.controls.to.value) {
+    <span class="filter-status" role="alert">La fecha inicial debe ser anterior a la final.</span>
+  }
+</form>
+
+@switch (state().status) {
+  @case ('idle') {
+    <section class="surface state-box">
+      <span class="state-icon">▤</span>
+      <strong>Selecciona un intervalo para comenzar</strong>
+      <p>El proceso ejecuta el Job existente para cada día y presenta la respuesta persistida por el backend.</p>
+    </section>
+  }
+  @case ('loading') {
+    <section class="surface state-box" aria-live="polite">
+      <span class="state-icon">↻</span>
+      <strong>Procesando reporte</strong>
+      <p>Spring Batch está agregando y guardando las ventas del periodo.</p>
+    </section>
+  }
+  @case ('error') {
+    <section class="surface state-box error" role="alert">
+      <span class="state-icon">!</span>
+      <strong>No se pudo obtener el reporte</strong>
+      <p>{{ errorMessage() }}</p>
+    </section>
+  }
+  @case ('success') {
+    @if (successState(); as current) {
+    @if (current.reports.length === 0) {
+      <section class="surface state-box"><strong>Sin resultados</strong><p>La API no devolvió reportes para esa operación.</p></section>
+    } @else {
+      <div class="section-heading">
+        <h2>Resultado persistido</h2>
+        <span>{{ current.reports.length }} días</span>
+      </div>
+      <div class="surface table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th class="numeric">Pedidos</th><th class="numeric">Ingresos</th><th>Distribución por estado</th><th>Generado</th></tr></thead>
+          <tbody>
+            @for (report of current.reports; track report.date) {
+              <tr>
+                <td>{{ report.date | date:'mediumDate':'':'es-MX' }}</td>
+                <td class="numeric">{{ report.orderCount | number }}</td>
+                <td class="numeric report-total">{{ report.totalCents | centsCurrency }}</td>
+                <td>
+                  @for (entry of report.byStatus | keyvalue; track entry.key) {
+                    <span class="status-pill {{ entry.key }}">{{ entry.key.replace('_', ' ') }} · {{ entry.value }} ({{ entry.value | statisticPercent:report.orderCount }})</span>&nbsp;
+                  }
+                </td>
+                <td>{{ report.generatedAt | date:'short':'':'es-MX' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <section class="surface report-result">
+        <h2>Totales del resultado consultado</h2>
+        <p>Sumatoria de los resultados diarios devueltos por el batch.</p>
+        <strong class="report-total">{{ totalCents() | centsCurrency }}</strong>
+      </section>
+    }
+    }
+  }
+}

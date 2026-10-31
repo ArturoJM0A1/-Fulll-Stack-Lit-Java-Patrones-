@@ -1,0 +1,114 @@
+<header class="page-header">
+  <div>
+    <div class="eyebrow">Analítica de ventas</div>
+    <h1>Resumen comercial</h1>
+    <p>Un vistazo al rendimiento de tu pizzería, con datos de pedidos del backend.</p>
+  </div>
+  <button class="button secondary" type="button" (click)="refresh()" [disabled]="state().status === 'loading'">
+    ↻ Actualizar
+  </button>
+</header>
+
+<form class="surface filters" [formGroup]="filterForm" aria-label="Filtrar periodo de ventas">
+  <div class="field">
+    <label for="dashboard-from">Desde</label>
+    <input id="dashboard-from" type="date" formControlName="from" />
+  </div>
+  <div class="field">
+    <label for="dashboard-to">Hasta</label>
+    <input id="dashboard-to" type="date" formControlName="to" />
+  </div>
+  <div class="field text-input">
+    <label for="order-search">Buscar pedido o producto</label>
+    <input id="order-search" type="search" [formControl]="searchControl" placeholder="ID o producto" />
+  </div>
+  @if (filterForm.controls.from.value > filterForm.controls.to.value) {
+    <span class="filter-status" role="alert">La fecha inicial debe ser anterior a la final.</span>
+  } @else {
+    <span class="filter-status">Periodo aplicado automáticamente</span>
+  }
+</form>
+
+@switch (state().status) {
+  @case ('loading') {
+    <section class="surface state-box" aria-live="polite">
+      <span class="state-icon">↻</span>
+      <strong>Cargando ventas</strong>
+      <p>Consultando pedidos y agregados en Spring Boot…</p>
+    </section>
+  }
+  @case ('error') {
+    <section class="surface state-box error" role="alert">
+      <span class="state-icon">!</span>
+      <strong>No se pudieron cargar las ventas</strong>
+      <p>{{ errorMessage() }}</p>
+      <button class="button secondary" type="button" (click)="refresh()">Reintentar</button>
+    </section>
+  }
+  @case ('success') {
+    @if (successState(); as current) {
+      @if (current.analytics.orderCount === 0) {
+        <section class="surface state-box">
+          <span class="state-icon">⌕</span>
+          <strong>Sin pedidos en este periodo</strong>
+          <p>El backend no encontró pedidos entre {{ current.analytics.from | date:'mediumDate' }} y {{ current.analytics.to | date:'mediumDate' }}. Cambia las fechas para consultar otro intervalo.</p>
+        </section>
+      } @else {
+        <section class="kpi-grid" aria-label="Indicadores clave">
+          <article class="surface kpi">
+            <div class="kpi-top"><span>Ingresos totales</span><span class="kpi-icon">$</span></div>
+            <div class="kpi-value">{{ kpis().revenue | centsCurrency }}</div>
+            <div class="kpi-note">Ingresos cobrados en el periodo</div>
+          </article>
+          <article class="surface kpi">
+            <div class="kpi-top"><span>Pedidos</span><span class="kpi-icon">▤</span></div>
+            <div class="kpi-value">{{ kpis().orders | number }}</div>
+            <div class="kpi-note">Pedidos recibidos en el intervalo</div>
+          </article>
+          <article class="surface kpi">
+            <div class="kpi-top"><span>Ticket promedio</span><span class="kpi-icon">◉</span></div>
+            <div class="kpi-value">{{ kpis().average | centsCurrency }}</div>
+            <div class="kpi-note">Ingreso promedio por pedido</div>
+          </article>
+          <article class="surface kpi">
+            <div class="kpi-top"><span>Más vendido</span><span class="kpi-icon">★</span></div>
+            <div class="kpi-value">{{ kpis().bestSeller }}</div>
+            <div class="kpi-note">Producto con más unidades</div>
+          </article>
+        </section>
+
+        <section class="chart-grid" aria-label="Gráficos de ventas">
+          <app-chart-card title="Ingresos diarios" subtitle="Evolución de pedidos por día" type="line" [data]="dailyChart()" [options]="cartesianOptions" />
+          <app-chart-card title="Ventas por producto" subtitle="Unidades vendidas en el periodo" type="bar" [data]="productsChart()" [options]="productOptions" />
+          <app-chart-card title="Pedidos por estado" subtitle="Distribución actual de estados" type="doughnut" [data]="statusesChart()" [options]="statusOptions" />
+          <app-chart-card title="Ingresos y descuentos" subtitle="Comparativa diaria (MXN)" type="bar" [data]="comparisonChart()" [options]="comparisonOptions" />
+        </section>
+
+        <div class="section-heading">
+          <h2>Pedidos recientes</h2>
+          <span>{{ filteredOrders(current.orders, current.range).length }} pedidos encontrados</span>
+        </div>
+        @if (filteredOrders(current.orders, current.range).length === 0) {
+          <section class="surface state-box"><strong>No hay pedidos que coincidan con la búsqueda</strong><p>Prueba con otro ID o nombre de producto.</p></section>
+        } @else {
+          <div class="surface table-wrap">
+            <table>
+              <thead><tr><th>Pedido</th><th>Fecha</th><th>Productos</th><th>Estado</th><th class="numeric">Total</th></tr></thead>
+              <tbody>
+                @for (order of filteredOrders(current.orders, current.range).slice(0, 8); track order.id) {
+                  <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.createdAt | date:'medium':'':'es-MX' }}</td>
+                    <td>{{ order.lines.length }} productos</td>
+                    <td><span class="status-pill {{ order.status }}">{{ order.status.replace('_', ' ') }}</span></td>
+                    <td class="numeric">{{ order.totalCents | centsCurrency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    }
+  }
+}

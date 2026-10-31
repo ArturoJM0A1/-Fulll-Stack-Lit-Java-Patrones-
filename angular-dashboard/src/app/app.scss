@@ -1,0 +1,27 @@
+:host { display: block; min-height: 100vh; }
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar { background: #17251f; color: #d7e3dc; display: flex; flex: 0 0 246px; flex-direction: column; padding: 26px 16px 18px; }
+.brand { align-items: center; color: inherit; display: flex; gap: 12px; margin: 0 8px 48px; text-decoration: none; }
+.brand-mark { align-items: center; background: #ee744c; border-radius: 12px; color: white; display: flex; font-size: 21px; font-weight: 800; height: 42px; justify-content: center; width: 42px; }
+.brand strong, .brand small { display: block; }
+.brand strong { color: white; font-size: 16px; }
+.brand small { color: #92a79a; font-size: 11px; margin-top: 3px; }
+.nav-caption { color: #80968a; font-size: 10px; font-weight: 700; letter-spacing: .12em; margin: 0 12px 12px; }
+nav { display: grid; gap: 6px; }
+nav a { align-items: center; border-radius: 9px; color: #b7c8bd; display: flex; font-size: 13px; gap: 12px; padding: 12px; text-decoration: none; transition: background .15s, color .15s; }
+nav a:hover, nav a.active { background: #293a32; color: white; }
+nav a.active { box-shadow: inset 3px 0 #f07a51; }
+.nav-icon { font-size: 19px; text-align: center; width: 20px; }
+.sidebar-footer { align-items: center; color: #92a79a; display: flex; font-size: 11px; gap: 9px; margin-top: auto; padding: 10px 8px 0; }
+.online-dot { background: #69c78e; border-radius: 50%; height: 7px; width: 7px; }
+.main-content { flex: 1; min-width: 0; padding: 34px clamp(20px, 4vw, 58px) 48px; }
+@media (max-width: 700px) {
+  .app-shell { display: block; }
+  .sidebar { padding: 14px; }
+  .brand { margin: 0 8px 16px; }
+  .nav-caption, .sidebar-footer { display: none; }
+  nav { grid-template-columns: repeat(3, 1fr); }
+  nav a { justify-content: center; padding: 10px 4px; }
+  .nav-icon { display: none; }
+  .main-content { padding: 24px 16px 36px; }
+}
