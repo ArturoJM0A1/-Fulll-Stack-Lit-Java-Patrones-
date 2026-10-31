@@ -1,0 +1,54 @@
+<header class="page-header">
+  <div>
+    <div class="eyebrow">Rendimiento del catálogo</div>
+    <h1>Análisis de productos</h1>
+    <p>Unidades e ingresos por producto según los pedidos y precios guardados por el backend.</p>
+  </div>
+  <button class="button secondary" type="button" (click)="refresh()" [disabled]="state().status === 'loading'">↻ Actualizar</button>
+</header>
+
+<section class="surface filters" aria-label="Búsqueda de productos">
+  <div class="field text-input">
+    <label for="product-search">Buscar producto</label>
+    <input id="product-search" type="search" [formControl]="searchControl" placeholder="Nombre del producto" />
+  </div>
+  <span class="filter-status">El intervalo de fechas se comparte con el resumen.</span>
+</section>
+
+@switch (state().status) {
+  @case ('loading') {
+    <section class="surface state-box" aria-live="polite"><span class="state-icon">↻</span><strong>Cargando productos</strong><p>Consultando el intervalo seleccionado…</p></section>
+  }
+  @case ('error') {
+    <section class="surface state-box error" role="alert"><span class="state-icon">!</span><strong>No se pudieron cargar los productos</strong><p>{{ errorMessage() }}</p></section>
+  }
+  @case ('success') {
+    @if (successState(); as current) {
+    @if (current.analytics.products.length === 0) {
+      <section class="surface state-box"><span class="state-icon">⌕</span><strong>Sin ventas de productos</strong><p>No se encontraron pedidos con líneas en este intervalo.</p></section>
+    } @else if (products().length === 0) {
+      <section class="surface state-box"><strong>No hay productos que coincidan</strong><p>Prueba con otro nombre.</p></section>
+    } @else {
+      <div class="section-heading">
+        <h2>Productos vendidos</h2>
+        <span>{{ products().length }} productos · total de {{ current.analytics.products.length }}</span>
+      </div>
+      <div class="surface table-wrap">
+        <table>
+          <thead><tr><th>Posición</th><th>Producto</th><th class="numeric">Unidades</th><th class="numeric">Ingresos históricos</th></tr></thead>
+          <tbody>
+            @for (product of products(); track product.name; let index = $index) {
+              <tr>
+                <td>{{ index + 1 }}</td>
+                <td><strong>{{ product.name }}</strong></td>
+                <td class="numeric">{{ product.quantity | number }}</td>
+                <td class="numeric">{{ product.revenueCents | centsCurrency }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    }
+  }
+}

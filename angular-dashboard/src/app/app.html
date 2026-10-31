@@ -1,0 +1,27 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/" aria-label="PizzaLab, inicio">
+      <span class="brand-mark">P</span>
+      <span><strong>PizzaLab</strong><small>Panel de administración</small></span>
+    </a>
+    <div class="nav-caption">ANÁLISIS</div>
+    <nav aria-label="Secciones de análisis">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <span class="nav-icon">⌂</span> Resumen
+      </a>
+      <a routerLink="/productos" routerLinkActive="active">
+        <span class="nav-icon">◫</span> Productos
+      </a>
+      <a routerLink="/reportes" routerLinkActive="active">
+        <span class="nav-icon">▤</span> Reportes batch
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="online-dot"></span>
+      <span>Datos conectados a Spring Boot</span>
+    </div>
+  </aside>
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>
